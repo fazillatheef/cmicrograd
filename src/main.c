@@ -23,6 +23,7 @@ limitations under the License.
 #include <sys/random.h>
 #include <unistd.h>
 #include <sys/time.h>
+#include <limits.h>
 
 #include "std.h"
 #include "value.h"

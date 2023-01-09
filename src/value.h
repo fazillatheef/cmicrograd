@@ -67,7 +67,7 @@ void _Value_resetVisited(Value *v)
 		_Value_resetVisited(v->prevs[0]);
 		_Value_resetVisited(v->prevs[1]);
 		v->visited = 0;
-		v->layer = 1000000000;
+		v->layer = INT_MAX;
 	}
 }
 int _Value_updateDepth(Value *v)
