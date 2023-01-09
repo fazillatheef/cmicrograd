@@ -25,14 +25,14 @@ typedef enum
 	Value_OP_NEG,
 	Value_OP_TANH,
 	Value_OP_RELU,
-} Value_OP;
+} Value_OP; // 0-8 4bits minimum needed
 
 typedef struct Value_s
 {
 	double data;
 	double grad;
 
-	struct Value_s *prevs[2];
+	struct Value_s *prevs[2]; //Pointer to children Values
 
 	unsigned char op : 7, visited : 1;
 	unsigned int layer; // TODO: too much space - get rid of it
@@ -67,7 +67,7 @@ void _Value_resetVisited(Value *v)
 		_Value_resetVisited(v->prevs[0]);
 		_Value_resetVisited(v->prevs[1]);
 		v->visited = 0;
-		v->layer = 1000000000;
+		v->layer = 1000000000; // is it a high num? INT_MAX
 	}
 }
 int _Value_updateDepth(Value *v)
@@ -159,7 +159,7 @@ void Value_backward(Value *self)
 	}
 }
 
-typedef struct ValueAllocator_s
+typedef struct ValueAllocator_s //Used to keep track of address of all values
 {
 	Value **blocks; // block = 65536x Value
 	int num_blocks;
@@ -195,10 +195,12 @@ Value *ValueAllocator_alloc(ValueAllocator *self)
 		// resizes base
 		self->num_blocks++;
 		self->blocks = realloc(self->blocks, self->num_blocks * sizeof(Value *));
-
+		// self->blocks is a pointer to a pointer that first contains 0
 		// adds block
 		self->blocks[self->num_blocks - 1] = malloc(sizeof(Value) * 65536);
+		// why cant we use calloc to avoid memset ?
 		memset(self->blocks[self->num_blocks - 1], 0, sizeof(Value) * 65536);
+		// what happens when num_blocks overflows?
 	}
 
 	Value *ret = &self->blocks[self->num_blocks - 1][self->num_values % 65536];
@@ -227,6 +229,7 @@ Value *VA_sub(ValueAllocator *allocator, Value *a, Value *b)
 Value *VA_mul(ValueAllocator *allocator, Value *a, Value *b)
 {
 	Value *self = _Value_init(ValueAllocator_alloc(allocator), 0, Value_OP_MUL);
+	//shouldnt _Value_init data be 1 - need to check
 	Value_setPre2(self, a, b);
 	return self;
 }
