@@ -195,12 +195,17 @@ Value *ValueAllocator_alloc(ValueAllocator *self)
 		// resizes base
 		self->num_blocks++;
 		self->blocks = realloc(self->blocks, self->num_blocks * sizeof(Value *));
-		// self->blocks is a pointer to a pointer that first contains 0
-		// adds block
+		// when called for the first time. It will be 0. So it will work like
+		// malloc. Then it will allocate memory for storing a pointer that 
+		// will eventually point to a value. Each block will contain 65536
+		// values(i.e. 2^16 values). This memory is extended when blocks
+		// are increased. Is it contiguous though??
 		self->blocks[self->num_blocks - 1] = malloc(sizeof(Value) * 65536);
-		// why cant we use calloc to avoid memset ?
+		// why cant we use calloc to avoid memset ? Need to read more
+		// https://stackoverflow.com/questions/2688466/why-mallocmemset-is-slower-than-calloc
 		memset(self->blocks[self->num_blocks - 1], 0, sizeof(Value) * 65536);
-		// what happens when num_blocks overflows?
+		// num_block overflowing is not a pratical problem - 4GB RAM.
+		// That is why it is ok to not check
 	}
 
 	Value *ret = &self->blocks[self->num_blocks - 1][self->num_values % 65536];
