@@ -29,7 +29,6 @@ void example1(void)
 	Value *f = VA_mul(va, e, d);
 
 	// run it
-	//debugged till here - gdb cmicrograd_d
 	Topo *topo = Topo_new(f);
 	TopoMT *topoParalel = TopoMT_new(NUMBER_OF_THREADS);
 	TopoMT_run(topoParalel, topo);

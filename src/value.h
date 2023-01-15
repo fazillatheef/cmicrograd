@@ -70,6 +70,11 @@ void _Value_resetVisited(Value *v)
 		v->layer = 1000000000; // is it a high num? INT_MAX
 	}
 }
+/* Each value is assigned a layer number based on the maximum number of values in 
+each branch (i.e. prevs). This way while doing calculation the order can be 
+maintained. The back propogation must be calculated from the final result
+gradient from each layer. So order is important!!!
+*/
 int _Value_updateDepth(Value *v)
 {
 	int depth = 0;
@@ -138,7 +143,7 @@ void Value_backward(Value *self)
 		self->prevs[1]->grad += self->prevs[0]->data * self->grad;
 		break;
 	case Value_OP_DIV:
-	{
+	{ // why are these braces needed
 		const double b = self->prevs[1]->data;
 		self->prevs[0]->grad += (1.0 / b) * self->grad;
 		self->prevs[1]->grad -= (self->prevs[0]->data / (b * b)) * self->grad; //-=
